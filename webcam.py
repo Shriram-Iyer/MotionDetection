@@ -4,6 +4,7 @@ import os
 import cv2
 import time
 from send_mail import sendmail
+from threading import Thread
 
 
 def clean_images():
@@ -49,12 +50,15 @@ while True:
     status_list = status_list[-2:]
 
     if status_list[0] == 1 and status_list[1] == 0:
-        print(img,"img")
-        sendmail(img)
-        clean_images()
+        email_thread = Thread(target=sendmail, args=(img,))
+        email_thread.daemon = True
+        clean_thread = Thread(target=clean_images)
+        clean_thread.daemon = True
+        email_thread.start()
     # print(status_list)
     cv2.imshow("My Video", frame)
     key = cv2.waitKey(1)
     if key == ord("q"):
         break
 video.release()
+clean_thread.start()
